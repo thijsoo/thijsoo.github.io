@@ -91,7 +91,7 @@ class UIManager {
         this.gameplayUI.addChild(this.livesText);
     }
 
-    createGameOverScreen() {
+    createGameOverScreen(isVictory = false) {
         this.gameOverScreen = new PIXI.Container();
 
         // Animated background with gradient
@@ -105,7 +105,7 @@ class UIManager {
         background.drawRect(50, 50, this.gameWidth - 100, this.gameHeight - 100);
 
         // Game Over title with spectacular styling
-        const gameOverTitle = this.createStylizedText('GAME OVER', {
+        const gameOverTitle = this.createStylizedText(isVictory ? 'YOU WIN!' : 'GAME OVER', {
             fontSize: 56,
             fill: [COLORS.GREEN, COLORS.PURPLE],
             fontWeight: 'bold',
@@ -295,10 +295,12 @@ class UIManager {
         }
     }
 
-    showGameOverScreen(stage, finalScore, highscoreStatus = null) {
-        if (!this.gameOverScreen) {
-            this.createGameOverScreen();
+    showGameOverScreen(stage, finalScore, highscoreStatus = null, isVictory = false) {
+        // Always recreate the screen with the appropriate message
+        if (this.gameOverScreen) {
+            this.gameOverScreen.destroy({ children: true });
         }
+        this.createGameOverScreen(isVictory);
 
         // Update final score
         if (this.finalScoreText) {

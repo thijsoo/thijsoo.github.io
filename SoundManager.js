@@ -296,6 +296,16 @@ class SoundManager {
         this.sounds.ballLaunch?.();
     }
 
+    playVictory() {
+        // Play a triumphant victory melody
+        this.playTone(523.25, 0.15, 'sine'); // C5
+        setTimeout(() => this.playTone(659.25, 0.15, 'sine'), 150); // E5
+        setTimeout(() => this.playTone(783.99, 0.15, 'sine'), 300); // G5
+        setTimeout(() => this.playTone(1046.50, 0.2, 'sine'), 450); // C6
+        setTimeout(() => this.playTone(783.99, 0.15, 'sine'), 650); // G5
+        setTimeout(() => this.playTone(1046.50, 0.3, 'sine'), 800); // C6 - longer final note
+    }
+
     // Volume and settings control
     setMasterVolume(volume) {
         this.masterVolume = Math.max(0, Math.min(1, volume));
@@ -365,5 +375,24 @@ class SoundManager {
 
     isSoundEnabled() {
         return this.soundEnabled;
+    }
+
+    playTone(frequency, duration, type = 'sine') {
+        if (!this.soundEnabled) return;
+
+        const oscillator = this.audioContext.createOscillator();
+        const gainNode = this.audioContext.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(this.masterGain);
+
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(frequency, this.audioContext.currentTime);
+
+        gainNode.gain.setValueAtTime(0.3, this.audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, this.audioContext.currentTime + duration);
+
+        oscillator.start(this.audioContext.currentTime);
+        oscillator.stop(this.audioContext.currentTime + duration);
     }
 }

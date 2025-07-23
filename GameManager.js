@@ -575,21 +575,15 @@ class GameManager {
     handleLevelComplete() {
         console.log('Level completed! All bricks destroyed.');
 
-        // Play victory sound and create celebration effect
-        this.soundManager.playLevelComplete();
-        this.particleManager.createLevelCompleteEffect(GAME_WIDTH / 2, GAME_HEIGHT / 2);
-
         // Check if there are more stages
         if (this.brickManager.hasMoreStages()) {
-            // Progress to next stage
-            setTimeout(() => {
-                this.progressToNextStage();
-            }, 2000); // Wait for celebration effects
+            // Progress to next stage immediately
+            this.progressToNextStage();
         } else {
-            // All stages completed - game complete!
-            setTimeout(() => {
-                this.handleGameComplete();
-            }, 2000);
+            // All stages completed - game complete! Show celebration effects and end immediately
+            this.soundManager.playLevelComplete();
+            this.particleManager.createLevelCompleteEffect(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+            this.handleGameComplete();
         }
     }
 
@@ -599,20 +593,20 @@ class GameManager {
         // Advance to next stage
         this.brickManager.nextStage();
 
-        // Remove existing bricks from stage
+        // Remove existing bricks from stage (they're already destroyed)
         this.brickManager.removeBricksFromStage(this.app.stage);
 
-        // Add new stage bricks to stage
+        // Add new stage bricks to stage but position them above the screen
         this.brickManager.addBricksToStage(this.app.stage);
+
+        // Start the slide-in animation
+        this.animateStageSlideIn();
 
         // Update UI to show new stage
         this.uiManager.updateStageDisplay(this.brickManager.getCurrentStage());
 
-        // Reset ball position on paddle (if any balls exist)
-        if (this.balls.length > 0 && this.paddle) {
-            this.balls[0].reset();
-            this.balls[0].positionOnPaddle(this.paddle);
-        }
+        // Keep the ball in play - don't reset it to paddle
+        // This creates a truly seamless transition between stages
 
         // Clear any remaining powerups
         this.clearAllPowerUps();
@@ -620,14 +614,65 @@ class GameManager {
         console.log(`Now playing Stage ${this.brickManager.getCurrentStage()}`);
     }
 
-    handleGameComplete() {
-        console.log('Game Complete! All stages cleared!');
+    animateStageSlideIn() {
+        const activeBricks = this.brickManager.getAllActiveBricks();
+        const slideDistance = 300; // Distance to slide from above
+        const animationDuration = 60; // frames (1 second at 60fps)
+        let animationFrame = 0;
 
-        // Could add special completion effects here
+        // Position all bricks above the screen initially
+        activeBricks.forEach(brick => {
+            brick.slideStartY = brick.position.y;
+            brick.position.y -= slideDistance;
+            brick.graphics.y = brick.position.y;
+        });
+
+        // Create slide animation function
+        const slideAnimation = () => {
+            animationFrame++;
+            const progress = Math.min(animationFrame / animationDuration, 1);
+
+            // Use easing function for smooth animation (ease-out)
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+            activeBricks.forEach(brick => {
+                if (brick.isActive) {
+                    // Calculate current position
+                    const currentY = (brick.slideStartY - slideDistance) + (slideDistance * easedProgress);
+                    brick.position.y = currentY;
+                    brick.graphics.y = currentY;
+                }
+            });
+
+            // Continue animation if not complete
+            if (progress < 1) {
+                requestAnimationFrame(slideAnimation);
+            } else {
+                // Animation complete - clean up
+                activeBricks.forEach(brick => {
+                    if (brick.isActive) {
+                        brick.position.y = brick.slideStartY;
+                        brick.graphics.y = brick.slideStartY;
+                        delete brick.slideStartY; // Clean up temporary property
+                    }
+                });
+                console.log('Stage slide-in animation complete');
+            }
+        };
+
+        // Start the animation
+        requestAnimationFrame(slideAnimation);
+    }
+
+    handleGameComplete() {
+        console.log('Game Complete! All stages cleared.');
+
+        // Play victory sound instead of level complete sound
+        this.soundManager.playVictory();
         this.particleManager.createLevelCompleteEffect(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-        // End the game after completing all stages
-        this.gameOver();
+        // End the game with victory screen
+        this.gameOverWithVictory();
     }
 
     clearAllPowerUps() {
@@ -664,6 +709,16 @@ class GameManager {
     gameOver() {
         this.gameState = GAME_STATES.GAME_OVER;
 
+        // Immediately remove all balls when game ends
+        this.balls.forEach(ball => {
+            ball.removeFromStage(this.app.stage);
+            ball.destroy();
+        });
+        this.balls = [];
+
+        // Remove balls from game objects array as well
+        this.gameObjects = this.gameObjects.filter(obj => !(obj instanceof Ball));
+
         // Stop background music
         if (this.soundManager) {
             this.soundManager.stopBackgroundMusic();
@@ -685,6 +740,39 @@ class GameManager {
         this.destroyGameObjects();
 
         console.log('Game over! Final score:', this.score);
+    }
+
+    gameOverWithVictory() {
+        this.gameState = GAME_STATES.GAME_OVER;
+
+        // Immediately remove all balls when game ends
+        this.balls.forEach(ball => {
+            ball.removeFromStage(this.app.stage);
+            ball.destroy();
+        });
+        this.balls = [];
+
+        // Remove balls from game objects array as well
+        this.gameObjects = this.gameObjects.filter(obj => !(obj instanceof Ball));
+
+        // Stop background music
+        if (this.soundManager) {
+            this.soundManager.stopBackgroundMusic();
+        }
+
+        // Hide gameplay UI
+        this.uiManager.hideGameplayUI(this.app.stage);
+
+        // Show victory screen with "YOU WIN!" message
+        this.uiManager.showGameOverScreen(this.app.stage, this.score, 'Submitting score...', true);
+
+        // Submit score to external system
+        this.submitFinalScore();
+
+        // Destroy game objects
+        this.destroyGameObjects();
+
+        console.log('Victory! All stages completed! Final score:', this.score);
     }
 
     async submitFinalScore() {
