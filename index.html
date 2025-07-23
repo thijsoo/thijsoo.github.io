@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yoast SEO Brick Breaker</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #1a1a1a;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+        }
+
+        #gameContainer {
+            border: 2px solid #77B227;
+            border-radius: 8px;
+            background-color: #000;
+        }
+
+        canvas {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer"></div>
+
+    <!-- PixiJS CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
+
+    <!-- Game modules - order matters! -->
+    <script src="Constants.js"></script>
+    <script src="GameObject.js"></script>
+    <script src="InputManager.js"></script>
+    <script src="Paddle.js"></script>
+    <script src="Ball.js"></script>
+    <script src="PowerUp.js"></script>
+    <script src="Bomb.js"></script>
+
+    <!-- Brick classes - Base class first, then specific types, then factory -->
+    <script src="bricks/BaseBrick.js"></script>
+    <script src="bricks/RedBrick.js"></script>
+    <script src="bricks/PurpleBrick.js"></script>
+    <script src="bricks/DarkPurpleBrick.js"></script>
+    <script src="bricks/WhiteBrick.js"></script>
+    <script src="bricks/GoldenBrick.js"></script>
+    <script src="bricks/PowerUpBrick.js"></script>
+    <script src="bricks/BombBrick.js"></script>
+    <script src="bricks/BrickFactory.js"></script>
+
+    <script src="BrickManager.js"></script>
+    <script src="UIManager.js"></script>
+    <script src="HighscoreManager.js"></script>
+    <script src="SoundManager.js"></script>
+    <script src="ParticleManager.js"></script>
+    <script src="Cheat.js"></script>
+    <script src="GameManager.js"></script>
+    <script src="game.js"></script>
+</body>
+</html>
