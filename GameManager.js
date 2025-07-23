@@ -303,10 +303,14 @@ class GameManager {
         this.particleManager.createBrickHitParticles(explosionX, explosionY, COLORS.ORANGE);
         this.particleManager.createBrickHitParticles(explosionX, explosionY, COLORS.YELLOW);
 
-        // Destroy bricks within explosion radius
+        // Destroy bricks within explosion radius and get count
+        let destroyedCount = 0;
         if (this.brickManager) {
-            this.destroyBricksInExplosion(explosionX, explosionY, explosionRadius);
+            destroyedCount = this.destroyBricksInExplosion(explosionX, explosionY, explosionRadius);
         }
+
+        // Spawn powerup based on explosion impact
+        this.spawnExplosionPowerUp(explosionX, explosionY, destroyedCount);
     }
 
     destroyBricksInExplosion(centerX, centerY, radius) {
@@ -354,6 +358,8 @@ class GameManager {
         if (this.brickManager.areAllBricksDestroyed()) {
             this.handleLevelComplete();
         }
+
+        return destroyedCount; // Return the count of destroyed bricks
     }
 
     collectPowerUp(powerUp) {
@@ -721,5 +727,49 @@ class GameManager {
 
     getGameHeight() {
         return GAME_HEIGHT;
+    }
+
+    spawnExplosionPowerUp(explosionX, explosionY, destroyedCount) {
+        // Only spawn powerup if at least one brick was destroyed
+        if (destroyedCount === 0) {
+            return;
+        }
+
+        // Calculate spawn chance based on destroyed bricks (more bricks = higher chance)
+        const baseChance = 0.3; // 30% base chance
+        const bonusChance = Math.min(destroyedCount * 0.15, 0.4); // Up to 40% bonus for multiple bricks
+        const spawnChance = baseChance + bonusChance;
+
+        if (Math.random() < spawnChance) {
+            // Define available powerup types with weights
+            const powerUpTypes = [
+                { type: 'paddleWidth', weight: 40 }, // Common utility powerup
+                { type: 'bomb', weight: 25 },        // Powerful but rare
+                { type: 'extraBall', weight: 35 }    // Valuable reward for good explosions
+            ];
+
+            // Select random powerup type based on weights
+            const totalWeight = powerUpTypes.reduce((sum, p) => sum + p.weight, 0);
+            let randomWeight = Math.random() * totalWeight;
+
+            let selectedType = 'paddleWidth'; // Default fallback
+            for (const powerUp of powerUpTypes) {
+                randomWeight -= powerUp.weight;
+                if (randomWeight <= 0) {
+                    selectedType = powerUp.type;
+                    break;
+                }
+            }
+
+            // Handle extra ball spawning differently - spawn ball directly instead of powerup
+            if (selectedType === 'extraBall') {
+                this.spawnExtraBall(explosionX, explosionY);
+                console.log(`Explosion triggered extra ball! (${destroyedCount} bricks destroyed)`);
+            } else {
+                // Spawn the powerup at explosion center
+                this.spawnPowerUp(explosionX, explosionY, selectedType);
+                console.log(`Explosion triggered powerup: ${selectedType} (${destroyedCount} bricks destroyed)`);
+            }
+        }
     }
 }
