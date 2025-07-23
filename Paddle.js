@@ -3,7 +3,7 @@
 // Paddle constants
 const PADDLE_WIDTH = 120;
 const PADDLE_HEIGHT = 20;
-const PADDLE_SPEED = 8;
+const PADDLE_SPEED = 12; // Increased from 8 to 12
 const PADDLE_MARGIN_BOTTOM = 50;
 const PADDLE_WIDTH_BONUS_DURATION = 900; // 15 seconds at 60fps
 

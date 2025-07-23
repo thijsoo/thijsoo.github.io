@@ -34,10 +34,12 @@ const STAGES = [
     {
         // Stage 1: Mixed brick types - easier introduction
         layout: [
-            [4, 2, 4, 2, 4, 2, 4], // White and purple alternating
-            [2, 1, 2, 6, 2, 1, 2], // Purple and red alternating with PowerUp brick
-            [1, 3, 1, 7, 1, 3, 1], // Red and dark purple alternating with Bomb brick
-            [4, 4, 2, 5, 7, 7, 4]  // White edges with purple center and golden extra ball brick
+           // [4, 2, 4, 2, 4, 2, 4],
+            //[2, 1, 2, 6, 2, 1, 2],
+           // [1, 3, 1, 7, 1, 3, 1],
+          //  [4, 4, 2, 5, 7, 7, 4]
+
+            [2]
         ]
     },
     {

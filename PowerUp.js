@@ -6,7 +6,7 @@ class PowerUp extends GameObject {
         this.type = type;
         this.width = 20;
         this.height = 20;
-        this.velocity = { x: 0, y: 3 }; // Falls downward
+        this.velocity = { x: 0, y: 5 }; // Increased from 3 to 5 - Falls downward faster
         this.collected = false;
 
         this.createGraphics();

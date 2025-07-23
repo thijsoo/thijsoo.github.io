@@ -579,10 +579,64 @@ class GameManager {
         this.soundManager.playLevelComplete();
         this.particleManager.createLevelCompleteEffect(GAME_WIDTH / 2, GAME_HEIGHT / 2);
 
-        // For now, just restart the level - future: add level progression
-        setTimeout(() => {
-            this.gameOver();
-        }, 2000); // Wait for celebration effects
+        // Check if there are more stages
+        if (this.brickManager.hasMoreStages()) {
+            // Progress to next stage
+            setTimeout(() => {
+                this.progressToNextStage();
+            }, 2000); // Wait for celebration effects
+        } else {
+            // All stages completed - game complete!
+            setTimeout(() => {
+                this.handleGameComplete();
+            }, 2000);
+        }
+    }
+
+    progressToNextStage() {
+        console.log('Progressing to next stage...');
+
+        // Advance to next stage
+        this.brickManager.nextStage();
+
+        // Remove existing bricks from stage
+        this.brickManager.removeBricksFromStage(this.app.stage);
+
+        // Add new stage bricks to stage
+        this.brickManager.addBricksToStage(this.app.stage);
+
+        // Update UI to show new stage
+        this.uiManager.updateStageDisplay(this.brickManager.getCurrentStage());
+
+        // Reset ball position on paddle (if any balls exist)
+        if (this.balls.length > 0 && this.paddle) {
+            this.balls[0].reset();
+            this.balls[0].positionOnPaddle(this.paddle);
+        }
+
+        // Clear any remaining powerups
+        this.clearAllPowerUps();
+
+        console.log(`Now playing Stage ${this.brickManager.getCurrentStage()}`);
+    }
+
+    handleGameComplete() {
+        console.log('Game Complete! All stages cleared!');
+
+        // Could add special completion effects here
+        this.particleManager.createLevelCompleteEffect(GAME_WIDTH / 2, GAME_HEIGHT / 2);
+
+        // End the game after completing all stages
+        this.gameOver();
+    }
+
+    clearAllPowerUps() {
+        // Remove all powerups from screen
+        this.powerUps.forEach(powerUp => {
+            powerUp.removeFromStage(this.app.stage);
+            powerUp.destroy();
+        });
+        this.powerUps = [];
     }
 
     handleBallLost() {

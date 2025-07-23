@@ -210,8 +210,8 @@ class Bomb extends PowerUp {
         const hitPosition = (this.position.x - paddleCenter) / (paddle.width / 2);
         const clampedHitPosition = Math.max(-0.8, Math.min(0.8, hitPosition));
 
-        // Set upward velocity with slight horizontal component
-        const speed = 6;
+        // Set upward velocity with slight horizontal component - increased speed from 6 to 9
+        const speed = 9;
         const angle = -Math.PI / 2 + (clampedHitPosition * Math.PI / 6); // Up to 30 degrees left/right
 
         this.velocity.x = Math.cos(angle) * speed;

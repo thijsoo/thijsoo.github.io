@@ -2,7 +2,7 @@
 
 // Ball constants
 const BALL_RADIUS = 8;
-const BALL_SPEED = 5;
+const BALL_SPEED = 7; // Increased from 5 to 7
 const BALL_START_ANGLE = -Math.PI / 3;
 
 class Ball extends GameObject {
